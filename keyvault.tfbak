@@ -1,0 +1,142 @@
+# Azure Key Vault with Private Endpoint
+
+# Data source to get current client configuration
+data "azurerm_client_config" "current" {}
+
+# Azure Key Vault
+resource "azurerm_key_vault" "example" {
+  name                     = module.naming.key_vault.name_unique
+  location                 = azurerm_resource_group.example.location
+  resource_group_name      = azurerm_resource_group.example.name
+  tenant_id               = data.azurerm_client_config.current.tenant_id
+  sku_name                = "standard"
+  
+  # Security settings
+  purge_protection_enabled   = true
+  soft_delete_retention_days = 90
+  
+  # Network access settings
+  public_network_access_enabled = false
+  
+  # Network ACLs
+  network_acls {
+    default_action = "Deny"
+    bypass         = "AzureServices"
+  }
+
+  # Access policy for the current user/service principal (for initial setup)
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    key_permissions = [
+      "Get", "List", "Update", "Create", "Import", "Delete", "Recover", "Backup", "Restore"
+    ]
+
+    secret_permissions = [
+      "Get", "List", "Set", "Delete", "Recover", "Backup", "Restore"
+    ]
+
+    certificate_permissions = [
+      "Get", "List", "Update", "Create", "Import", "Delete", "Recover", "Backup", "Restore", "ManageContacts", "ManageIssuers", "GetIssuers", "ListIssuers", "SetIssuers", "DeleteIssuers"
+    ]
+  }
+
+  # Access policy for the Function App managed identity
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = azurerm_linux_function_app.example.identity[0].principal_id
+
+    key_permissions = [
+      "Get", "List"
+    ]
+
+    secret_permissions = [
+      "Get", "List"
+    ]
+
+    certificate_permissions = [
+      "Get", "List"
+    ]
+  }
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Function App Key Vault"
+  }
+}
+
+# Private Endpoint for Key Vault
+resource "azurerm_private_endpoint" "keyvault" {
+  name                = "pe-${azurerm_key_vault.example.name}"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  subnet_id           = azurerm_subnet.snet_private_endpoint.id
+
+  private_service_connection {
+    name                           = "psc-${azurerm_key_vault.example.name}"
+    private_connection_resource_id = azurerm_key_vault.example.id
+    subresource_names              = ["vault"]
+    is_manual_connection           = false
+  }
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Key Vault Private Endpoint"
+  }
+}
+
+# Private DNS Zone for Key Vault
+resource "azurerm_private_dns_zone" "keyvault" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = azurerm_resource_group.example.name
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Key Vault Private DNS Zone"
+  }
+}
+
+# Link Private DNS Zone to Virtual Network
+resource "azurerm_private_dns_zone_virtual_network_link" "keyvault" {
+  name                  = "${azurerm_virtual_network.example.name}-keyvault-link"
+  resource_group_name   = azurerm_resource_group.example.name
+  private_dns_zone_name = azurerm_private_dns_zone.keyvault.name
+  virtual_network_id    = azurerm_virtual_network.example.id
+  registration_enabled  = false
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Key Vault DNS Zone Link"
+  }
+}
+
+# DNS A Record for Key Vault Private Endpoint
+resource "azurerm_private_dns_a_record" "keyvault" {
+  name                = azurerm_key_vault.example.name
+  zone_name           = azurerm_private_dns_zone.keyvault.name
+  resource_group_name = azurerm_resource_group.example.name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.keyvault.private_service_connection[0].private_ip_address]
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Key Vault DNS A Record"
+  }
+}
+
+# Example: Store a secret in Key Vault (optional)
+resource "azurerm_key_vault_secret" "example_secret" {
+  name         = "example-secret"
+  value        = "example-secret-value"
+  key_vault_id = azurerm_key_vault.example.id
+
+  depends_on = [
+    azurerm_key_vault.example
+  ]
+
+  tags = {
+    Environment = "Development"
+    Purpose     = "Example Secret"
+  }
+}
