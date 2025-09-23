@@ -40,9 +40,7 @@ resource "azurerm_storage_account" "example" {
 }
 
 # Private endpoint for Storage Account
-
-# TODO: "azurerm_private_endpoint" "storage" -> "azurerm_private_endpoint" "storage_blob"
-resource "azurerm_private_endpoint" "storage" {
+resource "azurerm_private_endpoint" "storage_blob" {
   name                = "pe-${azurerm_storage_account.example.name}-blob"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -178,7 +176,7 @@ resource "azurerm_private_dns_a_record" "storage_blob" {
   zone_name           = azurerm_private_dns_zone.storage_blob.name
   resource_group_name = azurerm_resource_group.example.name
   ttl                 = 300
-  records             = [azurerm_private_endpoint.storage.private_service_connection[0].private_ip_address]
+  records             = [azurerm_private_endpoint.storage_blob.private_service_connection[0].private_ip_address]
 }
 
 # -- Inbound Private Endpoint
