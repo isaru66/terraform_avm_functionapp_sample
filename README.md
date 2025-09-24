@@ -1,6 +1,6 @@
 # Azure Function App Terraform Examples
 
-A comprehensive repository demonstrating various Azure Function App deployment patterns using Terraform, including both standard Azure provider and Azure Verified Modules (AVM) approaches.
+A comprehensive repository demonstrating various Azure Function App deployment patterns using Terraform, including both standard [Azure provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest) and [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/) approaches.
 
 ## 🏗️ Architecture Overview
 
