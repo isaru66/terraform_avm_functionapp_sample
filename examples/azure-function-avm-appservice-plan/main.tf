@@ -224,8 +224,8 @@ module "avm_res_web_site" {
   }
 
   app_settings = {
-    //"FUNCTIONS_WORKER_RUNTIME" = "node"
-    //"FUNCTIONS_EXTENSION_VERSION" = "~4"
+    # https://learn.microsoft.com/en-us/azure/azure-functions/functions-app-settings#website_contentovervnet
+    WEBSITE_CONTENTOVERVNET = 1
   }
 
   site_config = {

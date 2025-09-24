@@ -226,6 +226,10 @@ module "avm_res_web_site" {
       azurerm_user_assigned_identity.user.id
     ]
   }
+  app_settings = {
+    # https://learn.microsoft.com/en-us/azure/azure-functions/functions-app-settings#website_contentovervnet
+    WEBSITE_CONTENTOVERVNET = 1
+  }
   maximum_instance_count = 100 # << Beware this parameter, this is how many instances can be created in the Consumption plan
   # Uses an existing storage account
   # storage_account_access_key = azurerm_storage_account.example.primary_access_key
