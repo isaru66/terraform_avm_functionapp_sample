@@ -22,3 +22,8 @@ output "function_app_fqdn" {
   description = "Function App."
   value       = module.avm_res_web_site.resource_uri
 }
+
+output "resource_group_name" {
+  description = "The name of the resource group"
+  value       = azurerm_resource_group.example.name
+}

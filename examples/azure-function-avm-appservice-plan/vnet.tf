@@ -23,7 +23,7 @@ resource "azurerm_subnet" "snet_internal_load_balancer" {
 
 
 resource "azurerm_subnet" "snet_vnet_integration" {
-  address_prefixes     = ["10.10.1.32/28"]
+  address_prefixes     = ["10.10.1.32/27"]
   name                 = "snet-vnet-integration"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.example.name
@@ -39,7 +39,7 @@ resource "azurerm_subnet" "snet_vnet_integration" {
 }
 
 resource "azurerm_subnet" "snet_private_endpoint" {
-  address_prefixes     = ["10.10.1.48/28"]
+  address_prefixes     = ["10.10.1.64/28"]
   name                 = "snet-private-endpoint"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.example.name
