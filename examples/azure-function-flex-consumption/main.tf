@@ -229,8 +229,12 @@ resource "azurerm_function_app_flex_consumption" "example" {
   storage_container_type      = "blobContainer"
   storage_container_endpoint  = "${azurerm_storage_account.example.primary_blob_endpoint}${azurerm_storage_container.deployments.name}"
   storage_authentication_type = "SystemAssignedIdentity" #"StorageAccountConnectionString"
-  storage_access_key          = azurerm_storage_account.example.primary_access_key
+  # storage_access_key          = azurerm_storage_account.example.primary_access_key
   
+  # disable public access
+  public_network_access_enabled = false
+
+
   # Runtime configuration
   runtime_name    = "node"
   runtime_version = "22"
