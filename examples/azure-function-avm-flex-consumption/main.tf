@@ -197,9 +197,17 @@ locals {
   split_subdomain                        = split(".", local.default_host_name)
 }
 
+
 resource "azurerm_private_dns_zone" "example" {
   name                = local.azurerm_private_dns_zone_resource_name
   resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "example" {
+  name                  = "${azurerm_virtual_network.example.name}-link"
+  private_dns_zone_name = azurerm_private_dns_zone.example.name
+  resource_group_name   = azurerm_resource_group.example.name
+  virtual_network_id    = azurerm_virtual_network.example.id
 }
 
 module "avm_res_web_site" {
